@@ -1,6 +1,6 @@
 import { CssBaseline, Grid, Container, TextField, Button } from "@mui/material";
 import { Fragment, useEffect, useState } from "react";
-import { init, start } from "./sip/SipClient";
+import { init, start, dropCall } from "./sip/SipClient";
 function App() {
   const [username, setUsername] = useState("1000");
   const [password, setPassword] = useState("Hala_1994");
@@ -12,6 +12,9 @@ function App() {
       <CssBaseline />
       <Container disableGutters>
         <Grid container spacing={1} direction="row">
+          <Grid item xs={12} >
+            <video autoPlay id="phoneaudio" width={"1280"} height={"720"}></video>
+          </Grid>
           <Grid item xs={12} md={4}>
             <TextField fullWidth label="Username" value={username} />
           </Grid>
@@ -42,6 +45,15 @@ function App() {
               }}
             >
               Start
+            </Button>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Button
+              onClick={() => {
+                dropCall();
+              }}
+            >
+              Drop
             </Button>
           </Grid>
         </Grid>

@@ -3,7 +3,8 @@ import JsSIP from "jssip";
 let socket;
 let configuration;
 let phone;
-//"wss://sip.myhost.com";
+var session;
+
 function init(props) {
   if (socket != null || configuration != null || phone != null)
     console.error("phone already initialized");
@@ -40,10 +41,17 @@ function onDisconnected(e) {
   console.log("onDisconnected");
 }
 function onRtcSession(e) {
-  console.log("onRtcSession");
+  e.session.connection.addEventListener("track", (e) => {
+    console.log("onRtcSession : track event ", e);
+    document.getElementById("phoneaudio").srcObject = e.streams[0];
+  }, false);
+
 }
+
 function onRegistered(e) {
   console.log("onRegistered");
+
+
   var eventHandlers = {
     progress: function (e) {
       console.log("call is in progress");
@@ -55,16 +63,27 @@ function onRegistered(e) {
       console.log("call ended with cause: " + e.data.cause);
     },
     confirmed: function (e) {
-      console.log("call confirmed");
+      console.log("call confirmed : ", e);
     },
+    newRTCSession: function (e) {
+      console.log("newRTCSession : ", e);
+    }
   };
 
-  var options = {
-    eventHandlers: eventHandlers,
-    mediaConstraints: { audio: true, video: false },
-  };
+  navigator.mediaDevices.getDisplayMedia({ audio: true, video: true })
+    .then((stream) => {
+      var options = {
+        eventHandlers: eventHandlers,
+        mediaStream: stream,
+        mediaConstraints: { audio: true, video: true },
+        sessionTimersExpires: 120
+      };
 
-  var session = phone.call("sip:5000@sip.tsuki.local", options);
+      session = phone.call("sip:3700@sip.tsuki.local", options);
+    })
+    .catch((err) => {
+
+    });
 }
 function onUnregistered(e) {
   console.log("onUnregistered");
@@ -73,4 +92,8 @@ function onRegistrationFailed(e) {
   console.log("onRegistrationFailed");
 }
 
-export { init, start };
+function dropCall() {
+  session.terminate();
+}
+
+export { init, start, dropCall };
